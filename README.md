@@ -33,7 +33,7 @@ The levels get tougher as you progress!
 
 Clone the repository
 
-git clone https://github.com/yourusername/brain-game.git
+git clone [https://github.com/SharonGwen/brain-game.git]
 
 
 Open the folder
