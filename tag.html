@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Memory Match Game</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #111;
+      color: #fff;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      margin: 20px 0;
+      color: palegreen;
+    }
+    #timer {
+      margin: 10px;
+      font-size: 20px;
+    }
+    #game-board {
+      display: grid;
+      grid-template-columns: repeat(4, 100px);
+      grid-gap: 10px;
+    }
+    .card {
+      width: 100px;
+      height: 100px;
+      background: #222;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      cursor: pointer;
+      border-radius: 8px;
+      user-select: none;
+    }
+    .flipped {
+      background: paleturquoise;
+    }
+    #retry-btn {
+      display: none;
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #ff4081;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧠 Memory Match</h1>
+  <div id="timer">Time Left: 60s</div>
+  <div id="game-board"></div>
+  <button id="retry-btn" onclick="restartGame()">Try Again</button>
+
+  <script>
+    let symbols = ['💣', '🍔', '🍁', '🍕', '🧋', '🧭', '♟️', '🍉'];
+    let cards = [...symbols, ...symbols];
+    cards = cards.sort(() => 0.5 - Math.random());
+
+    const board = document.getElementById('game-board');
+    const timerDisplay = document.getElementById('timer');
+    const retryBtn = document.getElementById('retry-btn');
+    let flippedCards = [];
+    let matched = [];
+    let timeLeft = 60;
+    let timer;
+
+    function createCard(symbol, index) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.dataset.symbol = symbol;
+      card.dataset.index = index;
+      card.addEventListener('click', handleCardClick);
+      board.appendChild(card);
+    }
+
+    function handleCardClick(e) {
+      const card = e.target;
+      if (card.classList.contains('flipped') || flippedCards.length >= 2) return;
+      card.classList.add('flipped');
+      card.innerText = card.dataset.symbol;
+      flippedCards.push(card);
+
+      if (flippedCards.length === 2) {
+        const [first, second] = flippedCards;
+        if (first.dataset.symbol === second.dataset.symbol) {
+          matched.push(first.dataset.symbol);
+          flippedCards = [];
+          if (matched.length === symbols.length) {
+            clearInterval(timer);
+            alert('You won! 🎉');
+          }
+        } else {
+          setTimeout(() => {
+            flippedCards.forEach(c => {
+              c.classList.remove('flipped');
+              c.innerText = '';
+            });
+            flippedCards = [];
+          }, 1000);
+        }
+      }
+    }
+
+    function startTimer() {
+      timer = setInterval(() => {
+        timeLeft--;
+        timerDisplay.innerText = `Time Left: ${timeLeft}s`;
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          endGame();
+        }
+      }, 1000);
+    }
+
+    function endGame() {
+      document.querySelectorAll('.card').forEach(card => card.removeEventListener('click', handleCardClick));
+      retryBtn.style.display = 'block';
+      timerDisplay.innerText = "Time's up! Try again";
+    }
+
+    function restartGame() {
+      board.innerHTML = '';
+      matched = [];
+      flippedCards = [];
+      timeLeft = 60;
+      retryBtn.style.display = 'none';
+      timerDisplay.innerText = `Time Left: 60s`;
+      cards = [...symbols, ...symbols].sort(() => 0.5 - Math.random());
+      cards.forEach((symbol, index) => createCard(symbol, index));
+      startTimer();
+    }
+
+    // Initial game start
+    cards.forEach((symbol, index) => createCard(symbol, index));
+    startTimer();
+  </script>
+</body>
+</html>
